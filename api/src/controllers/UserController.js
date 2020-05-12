@@ -7,9 +7,9 @@ module.exports = {
     },
 
     async destroy(Request, Response){
-        const {_id}= Request.body;
-        const user_id  = await User.deleteOne(
-            {_id}, (err) => {
+        const { id } = Request.headers;
+
+        await User.deleteOne( {_id: id}, (err) => {
             if(err) return Response.status(400).json({
                 error: true,
                 message: "Erro ao deletar"
