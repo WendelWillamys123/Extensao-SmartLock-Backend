@@ -23,11 +23,8 @@ module.exports = {
     },
 
     async show(Request, Response){
-        const { id } = Request.query;
-        let _id = id;
-        const usersBusca = await User.findOne({
-            _id,
-        });
+        const { _id } = Request.headers;
+        const usersBusca = await User.findById(_id);
 
         return Response.json(usersBusca);
     },
@@ -49,5 +46,12 @@ module.exports = {
         
         return Response.json(Newuser);
     
-    }
+    },
+
+    async Update(request, response){
+        const {_id, nome, email, Macs, matricula} = request.body;
+        console.log(_id);
+        const user = await User.findByIdAndUpdate (_id, {nome, email, Macs, matricula}, {new: true});
+        return response.json (user);
+    },
 }

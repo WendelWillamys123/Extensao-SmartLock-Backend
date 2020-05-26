@@ -9,6 +9,7 @@ routes.get('/search/users', UserController.show);
 routes.get('/users', UserController.index);
 routes.post('/users', UserController.store);
 routes.delete('/users/delete', UserController.destroy);
+routes.put('/users', UserController.Update);
 
 routes.get('/search/groups', GroupController.show);
 routes.get('/groups', GroupController.index);

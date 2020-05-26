@@ -34,9 +34,9 @@ module.exports = {
                     holder: newHolder
                 });
 
-                let newContent = holderGroup.content;
+                let newContent = holderGroup.locks;
                 newContent.push(NewLock._id);
-                await Group.findByIdAndUpdate({ _id: holderGroup._id}, { content: newContent}, {new: true});
+                await Group.findByIdAndUpdate({ _id: holderGroup._id}, { locks: newContent}, {new: true});
 
                 return response.json ({NewLock});
             } else return response.status(400).json({
@@ -60,7 +60,7 @@ module.exports = {
     {
         const {_id} = request.headers;
         const lock = await Lock.findByIdAndDelete(_id);
-        var newContentGroup = await Group.findOneAndUpdate({content: {$in: [_id]}}, {$pullAll: {content: [_id]}}, {new: true});
+        var newContentGroup = await Group.findOneAndUpdate({locks: {$in: [_id]}}, {$pullAll: {locks: [_id]}}, {new: true});
         return response.json ({lock, newContentGroup});
     }
 };

@@ -19,8 +19,7 @@ module.exports = {
         return Response.json({group, otherGroups, holderGroup});
     },
 
-    async Update(request, response)
-    {
+    async Update(request, response){
         const {_id, name} = request.body;
         const group = await Group.findByIdAndUpdate (_id, {name}, {new: true});
         return response.json (group);
@@ -28,15 +27,11 @@ module.exports = {
 
     async show(Request, Response){
         
-        const { content } = Request.headers;
-        console.log(content);
-
-        const groupsBusca = await Group.find({_id: {$in: content} });
-        const locksBusca = await Lock.find({_id: {$in: content} });
-
-        groupsBusca.push(...locksBusca);
+        const { _id } = Request.headers;
         
-        return Response.json(groupsBusca);
+        const holderGroup = await Group.findById(_id).populate('content').populate('locks');
+        
+        return Response.json(holderGroup);
     },
 
     async nameShow(Request, Response){
@@ -65,6 +60,7 @@ module.exports = {
                     name,
                     holder: newHolder,
                     content: [],
+                    locks: [],
                 });
 
                 let newContent = holderGroup.content;
@@ -78,6 +74,7 @@ module.exports = {
                NewGroup = await Group.create({
                 name,
                 content: [],
+                locks: [],
                  }); 
 
                 return Response.json ({NewGroup});

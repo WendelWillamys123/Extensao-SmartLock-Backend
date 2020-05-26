@@ -13,8 +13,8 @@ const GroupSchema = new mongoose.Schema
             type: mongoose.Schema.Types.ObjectId,
             ref : 'Group',
             default: null
-        },
-        { type: mongoose.Schema.Types.ObjectId,
+        }],
+        locks: [{ type: mongoose.Schema.Types.ObjectId,
             ref: 'Lock',
             default: null
         }]
