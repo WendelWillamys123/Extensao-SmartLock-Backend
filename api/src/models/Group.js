@@ -9,6 +9,7 @@ const GroupSchema = new mongoose.Schema
             ref : 'Group',
             default: null
         }],
+
         content: [{
             type: mongoose.Schema.Types.ObjectId,
             ref : 'Group',
@@ -17,7 +18,19 @@ const GroupSchema = new mongoose.Schema
         locks: [{ type: mongoose.Schema.Types.ObjectId,
             ref: 'Lock',
             default: null
-        }]
+        }],
+
+        holderLocalFisico: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'LocalFisico',
+            default: null
+        }, 
+
+        localFisico: [{
+             type: mongoose.Schema.Types.ObjectId,
+             ref: 'LocalFisico',
+             default: null
+            }]
     }
 );
 

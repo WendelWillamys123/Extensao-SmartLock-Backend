@@ -1,5 +1,6 @@
 const Group = require('../models/Group');
 const Lock = require('../models/Lock');
+const LocalFisico = require('../models/LocalFisico');
 
 module.exports = {
     async index(Request, Response){
@@ -11,12 +12,12 @@ module.exports = {
         const {_id} = Request.headers;
     
         const group = await Group.findByIdAndRemove(_id);
-        const otherGroups = await Group.find({holder: _id});
         const holderGroup = await Group.findOneAndUpdate({content: {$in: [_id]}}, {$pullAll: {content: [_id]}}, {new: true});
+        await LocalFisico.deleteMany ({holder: {$in: [_id]}});
         await Group.deleteMany ({holder: {$in: [_id]}});
         await Lock.deleteMany ({holder: {$in: [_id]}});
 
-        return Response.json({group, otherGroups, holderGroup});
+        return Response.json({group, holderGroup});
     },
 
     async Update(request, response){
@@ -29,22 +30,16 @@ module.exports = {
         
         const { _id } = Request.headers;
         
-        const holderGroup = await Group.findById(_id).populate('content').populate('locks');
+        const holderGroup = await Group.findById(_id).populate('content').populate('locks').populate('holder').populate('localFisico');
         
         return Response.json(holderGroup);
     },
 
-    async nameShow(Request, Response){
-        const { name } = Request.query;
-
-        const groupsBusca = await Group.findOne({name});
-
-        return Response.json(groupsBusca);
-    },
-
     async store(Request, Response){
-        const {name, _id = null} = Request.body;
+        const {name, _id = null, Localtype = "group"} = Request.body;
         
+
+        if(Localtype==="group"){
         const holderGroup = await Group.findOne({ _id });
 
         let NewGroup = await Group.findOne({ name });
@@ -56,16 +51,27 @@ module.exports = {
                 var newHolder = holderGroup.holder;
                 newHolder.push (holderGroup._id);
 
-                NewGroup = await Group.create({
-                    name,
-                    holder: newHolder,
-                    content: [],
-                    locks: [],
-                });
+                if(holderGroup.holderLocalFisico!==null){
+                    NewGroup = await Group.create({
+                        name,
+                        holder: newHolder,
+                        content: [],
+                        locks: [],
+                        holderLocalFisico: holderGroup.holderLocalFisico
+                    });
+                }
+                else{
+                 NewGroup = await Group.create({
+                        name,
+                        holder: newHolder,
+                        content: [],
+                        locks: [],
+                    });
+                }
 
                 let newContent = holderGroup.content;
                 newContent.push(NewGroup._id);
-                const groupContent = await Group.findByIdAndUpdate({ _id: holderGroup._id}, { content: newContent}, {new: true});
+                await Group.findByIdAndUpdate({ _id: holderGroup._id}, { content: newContent}, {new: true});
 
                 return Response.json ({NewGroup});
             }
@@ -84,7 +90,39 @@ module.exports = {
     } else return Response.status(400).json({
         error: true,
         message: "Um grupo com esse nome já existe"
-    });
+        });
+    }
+
+    if(Localtype==="localFisico"){
+        const holderLocal = await LocalFisico.findOne({ _id });
+
+        let NewGroup = await Group.findOne({ name });
+
+        if(NewGroup===null){
+            
+            if(holderLocal!==null){
+
+                NewGroup = await Group.create({
+                    name,
+                    holder: holderLocal.holder,
+                    content: [],
+                    locks: [],
+                    holderLocalFisico: holderLocal._id
+                });
+
+                let newContent = holderLocal.groups;
+                newContent.push(NewGroup._id);
+                await LocalFisico.findByIdAndUpdate({ _id: holderLocal._id}, { groups: newContent}, {new: true});
+
+                return Response.json ({NewGroup});
+            }
+
+      
+    } else return Response.status(400).json({
+        error: true,
+        message: "Um grupo com esse nome já existe"
+        });
+    }
    
     }
 }

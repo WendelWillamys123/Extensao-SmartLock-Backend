@@ -7,7 +7,11 @@ const LockSchema = new mongoose.Schema
         holder: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Group'
-        }]
+        }],
+        holderLocalFisico: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'LocalFisico'
+        }
     }
 );
 
