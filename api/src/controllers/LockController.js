@@ -21,37 +21,57 @@ module.exports = {
         const {name, _id = null, Localtype="group"} = request.body;
         
         if(Localtype==="group"){
+            
+                const holderGroup = await Group.findById(_id);
 
-            const holderGroup = await Group.findById(_id);
+                let lock = await Lock.findOne({ name });
 
-            let lock = await Lock.findOne({ name });
 
-            if(lock===null){
+                if(lock===null){
+                    
+                    if(holderGroup!==null){
+
+                        var newHolder = holderGroup.holder;
+                        newHolder.push(holderGroup._id);
+
+                    if(holderGroup.holderLocalFisico!==null){
+                        const NewLock = await Lock.create({
+                            name,
+                            holder: newHolder,
+                            holderLocalFisico: holderGroup.holderLocalFisico
+                        });
+
+                        let newContent = holderGroup.locks;
+                        newContent.push(NewLock._id);
+                        await Group.findByIdAndUpdate({ _id: holderGroup._id}, { locks: newContent}, {new: true});
+
+                        return response.json ({NewLock});
+                    }
                 
-                if(holderGroup!==null){
+                    else{
 
-                    var newHolder = holderGroup.holder;
-                    newHolder.push(holderGroup._id);
+                        const NewLock = await Lock.create({
+                            name,
+                            holder: newHolder
+                        });
 
-                    const NewLock = await Lock.create({
-                        name,
-                        holder: newHolder
+                        let newContent = holderGroup.locks;
+                        newContent.push(NewLock._id);
+                        await Group.findByIdAndUpdate({ _id: holderGroup._id}, { locks: newContent}, {new: true});
+
+                        return response.json ({NewLock});
+                    }
+                    } else return response.status(400).json({
+                        error: true,
+                        message: 'O grupo no qual deseja criar a tranca não foi encontrado'
                     });
-
-                    let newContent = holderGroup.locks;
-                    newContent.push(NewLock._id);
-                    await Group.findByIdAndUpdate({ _id: holderGroup._id}, { locks: newContent}, {new: true});
-
-                    return response.json ({NewLock});
                 } else return response.status(400).json({
                     error: true,
-                    message: 'O grupo no qual deseja criar a tranca não foi encontrado'
-                });
-            } else return response.status(400).json({
-                error: true,
-                message: 'Uma tranca com esse nome já existe'
-            })
-        }
+                    message: 'Uma tranca com esse nome já existe'
+                })
+            }
+        
+    
 
         if(Localtype==="localFisico"){
             
